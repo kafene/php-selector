@@ -55,7 +55,7 @@ class SelectorDOM {
      * @param string|DOMDocument $data
      * @param array $errors A by-ref capture for libxml error messages.
      */
-    public function __construct($data, &$errors) {
+    public function __construct($data, &$errors = null) {
         # Wrap this with libxml errors off
         # this both sets the new value, and returns the previous.
         $lib_xml_errors = libxml_use_internal_errors(true);
