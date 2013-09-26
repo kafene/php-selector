@@ -87,7 +87,7 @@ print "\n";
 
 function test_selector($selector, $count) {
     $html = get_test_html();
-    $actual = count(select_elements($selector, $html));
+    $actual = count(SelectorDOM::selectElements($selector, $html));
     print ($actual == $count)
         ? '.'
         : "\n '$selector' failed, expected $count but got $actual \n\n";
