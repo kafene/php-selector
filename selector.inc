@@ -16,6 +16,49 @@ define('SELECTOR_VERSION', '1.1.3');
  */
 
 class SelectorDOM {
+
+    public static $regexMap = [
+        '/\s*,\s*/' => '|descendant-or-self::',
+        // :button, :submit, etc
+        '/:(button|submit|file|checkbox|radio|image|reset|text|password)/' => 'input[@type="\1"]',
+        // [id]
+        '/\[(\w+)\]/' => '*[@\1]',
+        // foo[id=foo]
+        '/\[(\w+)=[\'"]?(.*?)[\'"]?\]/' => '[@\1="\2"]',
+        // [id=foo]
+        '/^\[/' => '*[',
+        // div#foo
+        '/([\w\-]+)\#([\w\-]+)/' => '\1[@id="\2"]',
+        // #foo
+        '/\#([\w\-]+)/' => '*[@id="\1"]',
+        // div.foo
+        '/([\w\-]+)\.([\w\-]+)/' => '\1[contains(concat(" ",@class," ")," \2 ")]',
+        // .foo
+        '/\.([\w\-]+)/' => '*[contains(concat(" ",@class," ")," \1 ")]',
+        // div:first-child
+        '/([\w\-]+):first-child/' => '*/\1[position()=1]',
+        // div:last-child
+        '/([\w\-]+):last-child/' => '*/\1[position()=last()]',
+        // :first-child
+        '/:first-child/' => '*/*[position()=1]',
+        // :last-child
+        '/:last-child/' => '*/*[position()=last()]',
+        // div:nth-child
+        '/([\w\-]+):nth-child\((\d+)\)/' => '*/\1[position()=\2]',
+        // :nth-child
+        '/:nth-child\((\d+)\)/' => '*/*[position()=\1]',
+        // :contains(Foo)
+        '/([\w\-]+):contains\((.*?)\)/' => '\1[contains(string(.),"\2")]',
+        // >
+        '/\s*>\s*/' => '/',
+        // ~
+        '/\s*~\s*/' => '/following-sibling::',
+        // +
+        '/\s*\+\s*([\w\-]+)/' => '/following-sibling::\1[position()=1]',
+        '/\]\*/' => ']',
+        '/\]\/\*/' => ']',
+    ];
+
   public function __construct($data) {
     if ($data instanceof DOMDocument) {
         $this->xpath = new DOMXpath($data);
@@ -87,50 +130,9 @@ function selector_to_xpath($selector) {
   // remove spaces around operators
   $selector = preg_replace('/\s*(>|~|\+|,)\s*/', '$1', $selector);
   $selectors = preg_split("/\s+/", $selector);
-    $regexMap = [
-        '/\s*,\s*/' => '|descendant-or-self::',
-        // :button, :submit, etc
-        '/:(button|submit|file|checkbox|radio|image|reset|text|password)/' => 'input[@type="\1"]',
-        // [id]
-        '/\[(\w+)\]/' => '*[@\1]',
-        // foo[id=foo]
-        '/\[(\w+)=[\'"]?(.*?)[\'"]?\]/' => '[@\1="\2"]',
-        // [id=foo]
-        '/^\[/' => '*[',
-        // div#foo
-        '/([\w\-]+)\#([\w\-]+)/' => '\1[@id="\2"]',
-        // #foo
-        '/\#([\w\-]+)/' => '*[@id="\1"]',
-        // div.foo
-        '/([\w\-]+)\.([\w\-]+)/' => '\1[contains(concat(" ",@class," ")," \2 ")]',
-        // .foo
-        '/\.([\w\-]+)/' => '*[contains(concat(" ",@class," ")," \1 ")]',
-        // div:first-child
-        '/([\w\-]+):first-child/' => '*/\1[position()=1]',
-        // div:last-child
-        '/([\w\-]+):last-child/' => '*/\1[position()=last()]',
-        // :first-child
-        '/:first-child/' => '*/*[position()=1]',
-        // :last-child
-        '/:last-child/' => '*/*[position()=last()]',
-        // div:nth-child
-        '/([\w\-]+):nth-child\((\d+)\)/' => '*/\1[position()=\2]',
-        // :nth-child
-        '/:nth-child\((\d+)\)/' => '*/*[position()=\1]',
-        // :contains(Foo)
-        '/([\w\-]+):contains\((.*?)\)/' => '\1[contains(string(.),"\2")]',
-        // >
-        '/\s*>\s*/' => '/',
-        // ~
-        '/\s*~\s*/' => '/following-sibling::',
-        // +
-        '/\s*\+\s*([\w\-]+)/' => '/following-sibling::\1[position()=1]',
-        '/\]\*/' => ']',
-        '/\]\/\*/' => ']',
-    ];
 
   foreach ($selectors as &$selector) {
-      foreach ($regexMap as $regex => $replacement) {
+      foreach (SelectorDOM::$regexMap as $regex => $replacement) {
           $selector = preg_replace($regex, $replacement, $selector);
       }
   }
