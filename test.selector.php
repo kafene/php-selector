@@ -10,7 +10,7 @@ function test_selector($selector, $count) {
 
 function test($selector, $expected) {
   $actual = selector_to_xpath($selector);
-  print $actual == $expected ? '.' : "\n '$selector' \n    expected '$expected' \n    but got  '$actual'\n\n";
+  assert("'$actual' == '$expected'");
 }
 
 test('foo',                 'descendant-or-self::foo');
