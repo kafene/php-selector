@@ -14,7 +14,6 @@ define('SELECTOR_VERSION', '1.1.3');
  *   $list_links = $dom->select('ul li a');
  *
  */
-
 class SelectorDOM {
 
     public static $regexMap = [
@@ -59,20 +58,53 @@ class SelectorDOM {
         '/\]\/\*/' => ']',
     ];
 
-  public function __construct($data) {
-    if ($data instanceof DOMDocument) {
-        $this->xpath = new DOMXpath($data);
-    } else {
-        $dom = new DOMDocument();
-        @$dom->loadHTML($data);
-        $this->xpath = new DOMXpath($dom);
+    /**
+     * Load $data into the object
+     *
+     * @param string|DOMDocument $data
+     */
+    public function __construct($data) {
+        if ($data instanceof DOMDocument) {
+            $this->xpath = new DOMXpath($data);
+        } else {
+            $dom = new DOMDocument();
+            @$dom->loadHTML($data);
+            $this->xpath = new DOMXpath($dom);
+        }
     }
-  }
 
-  public function select($selector, $as_array = true) {
-    $elements = $this->xpath->evaluate(selector_to_xpath($selector));
-    return $as_array ? elements_to_array($elements) : $elements;
-  }
+    public function select($selector, $as_array = true) {
+        $elements = $this->xpath->evaluate(selector_to_xpath($selector));
+        return $as_array ? self::elementsToArray($elements) : $elements;
+    }
+
+    /**
+     * Convert $elements to an array.
+     */
+    function elementsToArray($elements) {
+      $array = array();
+      for ($i = 0, $length = $elements->length; $i < $length; ++$i)
+        if ($elements->item($i)->nodeType == XML_ELEMENT_NODE)
+          array_push($array, self::elementToArray($elements->item($i)));
+      return $array;
+    }
+
+    /**
+     * Convert $element to an array.
+     */
+    function elementToArray($element) {
+      $array = array(
+        'name' => $element->nodeName,
+        'attributes' => array(),
+        'text' => $element->textContent,
+        'children' => self::elementsToArray($element->childNodes)
+        );
+      if ($element->attributes->length)
+        foreach($element->attributes as $key => $attr)
+          $array['attributes'][$key] = $attr->value;
+      return $array;
+    }
+
 }
 
 /**
@@ -93,34 +125,7 @@ function select_elements($selector, $html, $as_array = true) {
   return $dom->select($selector, $as_array);
 }
 
-/**
- * Convert $elements to an array.
- */
 
-function elements_to_array($elements) {
-  $array = array();
-  for ($i = 0, $length = $elements->length; $i < $length; ++$i)
-    if ($elements->item($i)->nodeType == XML_ELEMENT_NODE)
-      array_push($array, element_to_array($elements->item($i)));
-  return $array;
-}
-
-/**
- * Convert $element to an array.
- */
-
-function element_to_array($element) {
-  $array = array(
-    'name' => $element->nodeName,
-    'attributes' => array(),
-    'text' => $element->textContent,
-    'children' =>elements_to_array($element->childNodes)
-    );
-  if ($element->attributes->length)
-    foreach($element->attributes as $key => $attr)
-      $array['attributes'][$key] = $attr->value;
-  return $array;
-}
 
 /**
  * Convert $selector into an XPath string.
