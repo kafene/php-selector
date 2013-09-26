@@ -16,6 +16,11 @@ define('SELECTOR_VERSION', '1.1.3');
  */
 class SelectorDOM {
 
+    protected $xpath;
+
+    /**
+     * Map of regexes to convert CSS selector to XPath
+     */
     public static $regexMap = [
         '/\s*,\s*/' => '|descendant-or-self::',
         // :button, :submit, etc
@@ -73,15 +78,35 @@ class SelectorDOM {
         }
     }
 
+    /**
+     * Select elements from the loaded HTML using the css $selector.
+     * When $as_array is true elements and their children will
+     * be converted to array's containing the following keys (defaults to true):
+     *
+     *  - name : element name
+     *  - text : element text
+     *  - children : array of children elements
+     *  - attributes : attributes array
+     *
+     * Otherwise regular DOMElement's will be returned.
+     */
     public function select($selector, $as_array = true) {
-        $elements = $this->xpath->evaluate(selector_to_xpath($selector));
+        $elements = $this->xpath->evaluate(self::selectorToXpath($selector));
         return $as_array ? self::elementsToArray($elements) : $elements;
+    }
+
+    /**
+     * This allows a static access to the class, in the same way as the
+     * `select_elements` function did.
+     */
+    public static function selectElements($html, $selector, $as_array = true) {
+        return (new self($html))->select($selector, $as_array);
     }
 
     /**
      * Convert $elements to an array.
      */
-    function elementsToArray($elements) {
+    public function elementsToArray($elements) {
       $array = array();
       for ($i = 0, $length = $elements->length; $i < $length; ++$i)
         if ($elements->item($i)->nodeType == XML_ELEMENT_NODE)
@@ -92,7 +117,7 @@ class SelectorDOM {
     /**
      * Convert $element to an array.
      */
-    function elementToArray($element) {
+    public function elementToArray($element) {
       $array = array(
         'name' => $element->nodeName,
         'attributes' => array(),
@@ -105,44 +130,32 @@ class SelectorDOM {
       return $array;
     }
 
+    /**
+     * Convert $selector into an XPath string.
+     */
+    public static function selectorToXpath($selector) {
+        // remove spaces around operators
+        $selector = preg_replace('/\s*(>|~|\+|,)\s*/', '$1', $selector);
+        $selectors = preg_split("/\s+/", $selector);
+        // Process all regular expressions to convert selector to XPath
+        foreach ($selectors as &$selector) {
+            foreach (self::$regexMap as $regex => $replacement) {
+                $selector = preg_replace($regex, $replacement, $selector);
+            }
+        }
+        $selector = implode('/descendant::', $selectors);
+        $selector = 'descendant-or-self::' . $selector;
+        return $selector;
+    }
+
 }
+
 
 /**
- * Select elements from $html using the css $selector.
- * When $as_array is true elements and their children will
- * be converted to array's containing the following keys (defaults to true):
- *
- *  - name : element name
- *  - text : element text
- *  - children : array of children elements
- *  - attributes : attributes array
- *
- * Otherwise regular DOMElement's will be returned.
+ * Provides a procedural function to select use SelectorDOM::select()
+ * on some HTML.
  */
-
-function select_elements($selector, $html, $as_array = true) {
-  $dom = new SelectorDOM($html);
-  return $dom->select($selector, $as_array);
+function select_elements($html, $selector, $as_array = true) {
+    return SelectorDOM::selectElements($selector, $html, $as_array);
 }
 
-
-
-/**
- * Convert $selector into an XPath string.
- */
-
-function selector_to_xpath($selector) {
-  // remove spaces around operators
-  $selector = preg_replace('/\s*(>|~|\+|,)\s*/', '$1', $selector);
-  $selectors = preg_split("/\s+/", $selector);
-
-  foreach ($selectors as &$selector) {
-      foreach (SelectorDOM::$regexMap as $regex => $replacement) {
-          $selector = preg_replace($regex, $replacement, $selector);
-      }
-  }
-  // ' '
-  $selector = implode('/descendant::', $selectors);
-  $selector = 'descendant-or-self::' . $selector;
-  return $selector;
-}

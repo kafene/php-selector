@@ -9,7 +9,7 @@ function test_selector($selector, $count) {
 }
 
 function test($selector, $expected) {
-  $actual = selector_to_xpath($selector);
+  $actual = SelectorDOM::selectorToXpath($selector);
   assert("'".addslashes($actual).' == '.addslashes($expected)."'");
 }
 
