@@ -1,11 +1,8 @@
 <?php
 
-// --- Selector.inc - (c) Copyright TJ Holowaychuk <tj@vision-media.ca> MIT Licensed
-
-define('SELECTOR_VERSION', '1.1.3');
-
 /**
  * SelectorDOM.
+ * (c) Copyright TJ Holowaychuk <tj@vision-media.ca> MIT Licensed
  *
  * Persitant object for selecting elements.
  *
@@ -16,48 +13,55 @@ define('SELECTOR_VERSION', '1.1.3');
  */
 class SelectorDOM {
 
+    const VERSION = '1.1.3';
+
+    /**
+     * @var DOMXPath
+     */
     protected $xpath;
 
     /**
      * Map of regexes to convert CSS selector to XPath
+     *
+     * @var array
      */
     public static $regexMap = [
         '/\s*,\s*/' => '|descendant-or-self::',
-        // :button, :submit, etc
+    # :button, :submit, etc
         '/:(button|submit|file|checkbox|radio|image|reset|text|password)/' => 'input[@type="\1"]',
-        // [id]
+    # [id]
         '/\[(\w+)\]/' => '*[@\1]',
-        // foo[id=foo]
+    # foo[id=foo]
         '/\[(\w+)=[\'"]?(.*?)[\'"]?\]/' => '[@\1="\2"]',
-        // [id=foo]
+    # [id=foo]
         '/^\[/' => '*[',
-        // div#foo
+    # div#foo
         '/([\w\-]+)\#([\w\-]+)/' => '\1[@id="\2"]',
-        // #foo
+    # #foo
         '/\#([\w\-]+)/' => '*[@id="\1"]',
-        // div.foo
+    # div.foo
         '/([\w\-]+)\.([\w\-]+)/' => '\1[contains(concat(" ",@class," ")," \2 ")]',
-        // .foo
+    # .foo
         '/\.([\w\-]+)/' => '*[contains(concat(" ",@class," ")," \1 ")]',
-        // div:first-child
+    # div:first-child
         '/([\w\-]+):first-child/' => '*/\1[position()=1]',
-        // div:last-child
+    # div:last-child
         '/([\w\-]+):last-child/' => '*/\1[position()=last()]',
-        // :first-child
+    # :first-child
         '/:first-child/' => '*/*[position()=1]',
-        // :last-child
+    # :last-child
         '/:last-child/' => '*/*[position()=last()]',
-        // div:nth-child
+    # div:nth-child
         '/([\w\-]+):nth-child\((\d+)\)/' => '*/\1[position()=\2]',
-        // :nth-child
+    # :nth-child
         '/:nth-child\((\d+)\)/' => '*/*[position()=\1]',
-        // :contains(Foo)
+    # :contains(Foo)
         '/([\w\-]+):contains\((.*?)\)/' => '\1[contains(string(.),"\2")]',
-        // >
+    # >
         '/\s*>\s*/' => '/',
-        // ~
+    # ~
         '/\s*~\s*/' => '/following-sibling::',
-        // +
+    # +
         '/\s*\+\s*([\w\-]+)/' => '/following-sibling::\1[position()=1]',
         '/\]\*/' => ']',
         '/\]\/\*/' => ']',
@@ -89,6 +93,9 @@ class SelectorDOM {
      *  - attributes : attributes array
      *
      * Otherwise regular DOMElement's will be returned.
+     *
+     * @param string $selector CSS Selector
+     * @param boolean $as_array Whether to return an array or DOMElement
      */
     public function select($selector, $as_array = true) {
         $elements = $this->xpath->evaluate(self::selectorToXpath($selector));
@@ -98,6 +105,10 @@ class SelectorDOM {
     /**
      * This allows a static access to the class, in the same way as the
      * `select_elements` function did.
+     *
+     * @see $this->select()
+     * @param string $html
+     * @param string $selector CSS Selector
      */
     public static function selectElements($html, $selector, $as_array = true) {
         return (new self($html))->select($selector, $as_array);
@@ -105,29 +116,35 @@ class SelectorDOM {
 
     /**
      * Convert $elements to an array.
+     *
+     * @param DOMNodeList $elements
      */
     public function elementsToArray($elements) {
-      $array = array();
-      for ($i = 0, $length = $elements->length; $i < $length; ++$i)
-        if ($elements->item($i)->nodeType == XML_ELEMENT_NODE)
-          array_push($array, self::elementToArray($elements->item($i)));
-      return $array;
+        $array = [];
+        for ($i = 0, $length = $elements->length; $i < $length; ++$i) {
+            if ($elements->item($i)->nodeType == XML_ELEMENT_NODE) {
+                array_push($array, self::elementToArray($elements->item($i)));
+            }
+        }
+        return $array;
     }
 
     /**
      * Convert $element to an array.
      */
     public function elementToArray($element) {
-      $array = array(
-        'name' => $element->nodeName,
-        'attributes' => array(),
-        'text' => $element->textContent,
-        'children' => self::elementsToArray($element->childNodes)
-        );
-      if ($element->attributes->length)
-        foreach($element->attributes as $key => $attr)
-          $array['attributes'][$key] = $attr->value;
-      return $array;
+        $array = [
+            'name'       => $element->nodeName,
+            'attributes' => [],
+            'text'       => $element->textContent,
+            'children'   => self::elementsToArray($element->childNodes),
+        ];
+        if ($element->attributes->length) {
+            foreach($element->attributes as $key => $attr) {
+                $array['attributes'][$key] = $attr->value;
+            }
+        }
+        return $array;
     }
 
     /**
@@ -150,6 +167,10 @@ class SelectorDOM {
 
 }
 
+#
+# Procedural components
+#
+define('SELECTOR_VERSION', SelectorDOM::VERSION);
 
 /**
  * Provides a procedural function to select use SelectorDOM::select()
