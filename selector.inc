@@ -64,7 +64,7 @@ class SelectorDOM {
      * @param string|DOMDocument $data
      */
     public function __construct($data) {
-        if ($data instanceof DOMDocument) {
+        if (is_a($data, 'DOMDocument')) {
             $this->xpath = new DOMXpath($data);
         } else {
             $dom = new DOMDocument();
