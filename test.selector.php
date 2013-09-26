@@ -95,9 +95,16 @@ function test_selector($selector, $count) {
 
 function test($selector, $expected) {
     $actual = SelectorDOM::selectorToXpath($selector);
-    # Using assert with quotes here so it will dump the unmatched
-    # string on failure.
-    assert("'".addslashes($actual).' == '.addslashes($expected)."'");
+    if ($web = 'cli' !== PHP_SAPI) {
+        echo '<PRE>';
+    }
+    assert($actual == $expected);
+    echo "\nExpected: $expected\n";
+    echo "Actual:   $actual\n";
+    echo str_repeat('-', 80)."\n";
+    if ($web) {
+        echo '</PRE>';
+    }
 }
 
 function get_test_html() {
