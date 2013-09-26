@@ -85,10 +85,7 @@ function element_to_array($element) {
 
 function selector_to_xpath($selector) {
   // remove spaces around operators
-  $selector = preg_replace('/\s*>\s*/', '>', $selector);
-  $selector = preg_replace('/\s*~\s*/', '~', $selector);
-  $selector = preg_replace('/\s*\+\s*/', '+', $selector);
-  $selector = preg_replace('/\s*,\s*/', ',', $selector);
+  $selector = preg_replace('/\s*(>|~|\+|,)\s*/', '$1', $selector);
   $selectors = preg_split("/\s+/", $selector);
     $regexMap = [
         '/\s*,\s*/' => '|descendant-or-self::',
