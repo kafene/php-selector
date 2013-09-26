@@ -115,9 +115,9 @@ function selector_to_xpath($selector) {
   	// div:last-child
   	$selector = preg_replace('/([\w\-]+):last-child/', '*/\1[position()=last()]', $selector);
   	// :first-child
-  	$selector = str_replace(':first-child', '*/*[position()=1]', $selector);
+  	$selector = preg_replace('/:first-child/', '*/*[position()=1]', $selector);
   	// :last-child
-  	$selector = str_replace(':last-child', '*/*[position()=last()]', $selector);
+  	$selector = preg_replace('/:last-child/', '*/*[position()=last()]', $selector);
   	// div:nth-child
   	$selector = preg_replace('/([\w\-]+):nth-child\((\d+)\)/', '*/\1[position()=\2]', $selector);
   	// :nth-child
@@ -130,8 +130,8 @@ function selector_to_xpath($selector) {
   	$selector = preg_replace('/\s*~\s*/', '/following-sibling::', $selector);
   	// +
   	$selector = preg_replace('/\s*\+\s*([\w\-]+)/', '/following-sibling::\1[position()=1]', $selector);
-	$selector = str_replace(']*', ']', $selector);
-  	$selector = str_replace(']/*', ']', $selector);
+	  $selector = preg_replace('/\]\*/', ']', $selector);
+  	$selector = preg_replace('/\]\/\*/', ']', $selector);
   }
   // ' '
   $selector = implode('/descendant::', $selectors);
