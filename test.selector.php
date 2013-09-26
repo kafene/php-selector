@@ -95,6 +95,8 @@ function test_selector($selector, $count) {
 
 function test($selector, $expected) {
     $actual = SelectorDOM::selectorToXpath($selector);
+    # Using assert with quotes here so it will dump the unmatched
+    # string on failure.
     assert("'".addslashes($actual).' == '.addslashes($expected)."'");
 }
 
