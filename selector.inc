@@ -16,7 +16,7 @@ define('SELECTOR_VERSION', '1.1.3');
  */
 
 class SelectorDOM {
-  public function SelectorDOM($data) {
+  public function __construct($data) {
     if ($data instanceof DOMDocument) {
         $this->xpath = new DOMXpath($data);
     } else {
@@ -25,7 +25,7 @@ class SelectorDOM {
         $this->xpath = new DOMXpath($dom);
     }
   }
-  
+
   public function select($selector, $as_array = true) {
     $elements = $this->xpath->evaluate(selector_to_xpath($selector));
     return $as_array ? elements_to_array($elements) : $elements;
@@ -90,15 +90,15 @@ function selector_to_xpath($selector) {
   $selector = preg_replace('/\s*\+\s*/', '+', $selector);
   $selector = preg_replace('/\s*,\s*/', ',', $selector);
   $selectors = preg_split("/\s+/", $selector);
- 
+
   foreach ($selectors as &$selector) {
   	// ,
   	$selector = preg_replace('/\s*,\s*/', '|descendant-or-self::', $selector);
-  	// :button, :submit, etc 
+  	// :button, :submit, etc
   	$selector = preg_replace('/:(button|submit|file|checkbox|radio|image|reset|text|password)/', 'input[@type="\1"]', $selector);
   	// [id]
   	$selector = preg_replace('/\[(\w+)\]/', '*[@\1]', $selector);
-  	// foo[id=foo]        
+  	// foo[id=foo]
   	$selector = preg_replace('/\[(\w+)=[\'"]?(.*?)[\'"]?\]/', '[@\1="\2"]', $selector);
   	// [id=foo]
   	$selector = preg_replace('/^\[/', '*[', $selector);
@@ -128,11 +128,11 @@ function selector_to_xpath($selector) {
   	$selector = preg_replace('/\s*>\s*/', '/', $selector);
   	// ~
   	$selector = preg_replace('/\s*~\s*/', '/following-sibling::', $selector);
-  	// + 
+  	// +
   	$selector = preg_replace('/\s*\+\s*([\w\-]+)/', '/following-sibling::\1[position()=1]', $selector);
 	$selector = str_replace(']*', ']', $selector);
   	$selector = str_replace(']/*', ']', $selector);
-  }  
+  }
   // ' '
   $selector = implode('/descendant::', $selectors);
   $selector = 'descendant-or-self::' . $selector;
