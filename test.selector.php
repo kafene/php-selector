@@ -1,6 +1,6 @@
 <?php
 
-include('selector.inc');
+include('selector.php');
 
 function test_selector($selector, $count) {
   global $html;
