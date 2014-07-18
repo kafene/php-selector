@@ -2,7 +2,7 @@
 
 /**
  * SelectorDOM.
- * (c) Copyright TJ Holowaychuk <tj@vision-media.ca> MIT Licensed
+ * Copyright (c) TJ Holowaychuk <tj@vision-media.ca> MIT Licensed
  *
  * Persitent object for selecting elements.
  *
@@ -13,7 +13,7 @@
  */
 class SelectorDOM {
 
-    const VERSION = '1.1.3';
+    const VERSION = '1.1.4';
 
     /**
      * @var DOMXPath
@@ -100,7 +100,7 @@ class SelectorDOM {
         # this both sets the new value, and returns the previous.
         $lxmlErrors = libxml_use_internal_errors(true);
 
-        if (is_a($data, 'DOMDocument')) {
+        if ($data instanceof DOMDocument) {
             $this->xpath = new DOMXpath($data);
         } else {
             $dom = new DOMDocument();
@@ -159,6 +159,7 @@ class SelectorDOM {
 
         for ($i = 0, $length = $elements->length; $i < $length; ++$i) {
             $item = $elements->item($i);
+
             if (XML_ELEMENT_NODE === $item->nodeType) {
                 array_push($array, self::elementToArray($item));
             }
@@ -194,7 +195,7 @@ class SelectorDOM {
     public static function selectorToXpath($selector)
     {
         # remove spaces around operators
-        $selector = preg_replace('/\s*(>|~|\+|,)\s*/', '$1', $selector);
+        $selector = preg_replace('/\s*([>~,+])\s*/', '$1', $selector);
         $selectors = preg_split("/\s+/", $selector);
 
         # Process all regular expressions to convert selector to XPath
@@ -224,4 +225,3 @@ define('SELECTOR_VERSION', SelectorDOM::VERSION);
 function select_elements($selector, $html, $as_array = true) {
     return SelectorDOM::selectElements($selector, $html, $as_array);
 }
-
