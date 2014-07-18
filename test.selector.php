@@ -1,6 +1,6 @@
-<?php
+<?php 
 
-include('selector.php');
+include('selector.inc');
 
 assert_options(ASSERT_ACTIVE, true);
 assert_options(ASSERT_WARNING, true);
@@ -26,7 +26,7 @@ $test_selector = function ($selector, $count) use ($html) {
 
 $test = function ($selector, $expected) {
     $actual = SelectorDOM::selectorToXpath($selector);
-    assert('$actual == $expected');
+    assert($actual == $expected, "Actual: $actual, Expected: $expected");
 };
 
 $test('foo',                 'descendant-or-self::foo');
@@ -52,7 +52,7 @@ $test('div:first-child',     'descendant-or-self::*/div[position()=1]');
 $test(':last-child',         'descendant-or-self::*/*[position()=last()]');
 $test('div:last-child',      'descendant-or-self::*/div[position()=last()]');
 $test(':nth-child(2)',       'descendant-or-self::*/*[position()=2]');
-$test('div:nth-child(2)',    'descendant-or-self::*/div[position()=2]');
+$test('div:nth-child(2)',    'descendant-or-self::*/*[position()=2 and self::div]');
 $test('foo + bar',           'descendant-or-self::foo/following-sibling::bar[position()=1]');
 $test('li:contains(Foo)',    'descendant-or-self::li[contains(string(.),"Foo")]');
 $test('foo bar baz',         'descendant-or-self::foo/descendant::bar/descendant::baz');
