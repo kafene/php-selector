@@ -66,7 +66,7 @@ class SelectorDOM {
         '/:last-child/' => '*/*[position()=last()]',
 
         # div:nth-child
-        '/([\w\-]+):nth-child\((\d+)\)/' => '*/\1[position()=\2]',
+        '/([\w\-]+):nth-child\((\d+)\)/' => '*/*[position()=\2 and self::\1]',
 
         # :nth-child
         '/:nth-child\((\d+)\)/' => '*/*[position()=\1]',
