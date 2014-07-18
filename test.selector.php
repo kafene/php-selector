@@ -1,6 +1,6 @@
 <?php 
 
-include('selector.inc');
+include('selector.php');
 
 assert_options(ASSERT_ACTIVE, true);
 assert_options(ASSERT_WARNING, true);
